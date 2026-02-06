@@ -2,7 +2,7 @@ import Header from "@/components/Header"
 import { SearchBackground } from "@/components/search/SearchBackground"
 import { SearchHero } from "@/components/search/SearchHero"
 import { SearchBar } from "@/components/search/SearchBar"
-import { SearchFilters } from "@/components/search/SearchFilters"
+import Footer from "@/components/Footer"
 
 function Home() {
     return (
@@ -15,12 +15,8 @@ function Home() {
                 <main className="flex-1 flex flex-col items-center justify-center -mt-16 px-4 py-12">
                     <SearchHero />
                     <SearchBar />
-                    <SearchFilters />
                 </main>
-
-                <footer className="w-full py-6 text-center text-muted-foreground text-sm relative z-10">
-                    <p>&copy; 2026 Engenha Search. DevTech Softwares. Todos os direitos reservados.</p>
-                </footer>
+                <Footer />
             </div>
         </div>
     )

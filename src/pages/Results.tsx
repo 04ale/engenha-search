@@ -1,61 +1,74 @@
 import Header from "@/components/Header"
+import { useCallback, useEffect, useState } from "react"
 import { SearchBackground } from "@/components/search/SearchBackground"
-import { EngineerCard, type EngineerProps } from "@/components/results/EngineerCard"
-import { SlidersHorizontal, ChevronDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { EngineerCard } from "@/components/results/EngineerCard"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useSearchParams } from "react-router-dom"
+import { useEngenheiros } from "@/hooks/useEngenheiros"
+import { Return } from "@/components/Return"
+import Footer from "@/components/Footer"
+import { SidebarFilter } from "@/components/search/SidebarFilter"
 
-// Mock Data
-const MOCK_ENGINEERS: EngineerProps[] = [
-    {
-        id: "1",
-        nome: "Carlos Ferreira",
-        crea: "123456/SP",
-        especialidade: "Engenharia Civil",
-        email: "carlos.eng@example.com",
-        telefone: "(11) 99999-9999",
-        avatar_url: "https://github.com/shadcn.png"
-    },
-    {
-        id: "2",
-        nome: "Ana Julia Santos",
-        crea: "654321/RJ",
-        especialidade: "Engenharia Elétrica",
-        email: "ana.santos@example.com",
-        telefone: "(21) 98888-8888",
-        avatar_url: "https://github.com/shadcn.png"
-    },
-    {
-        id: "3",
-        nome: "Roberto Almeida",
-        crea: "987654/PR",
-        especialidade: "Engenharia Mecânica",
-        email: "roberto.mec@example.com",
-        telefone: "(41) 97777-7777",
-        avatar_url: "https://github.com/shadcn.png"
-    },
-    {
-        id: "4",
-        nome: "Fernanda Costa",
-        crea: "112233/MG",
-        especialidade: "Engenharia de Software",
-        email: "fernanda.dev@example.com",
-        telefone: "(31) 96666-6666",
-        avatar_url: "https://github.com/shadcn.png"
-    },
-    {
-        id: "5",
-        nome: "Lucas Pereira",
-        crea: "445566/RS",
-        especialidade: "Engenharia de Segurança",
-        email: "lucas.seg@example.com",
-        telefone: "(51) 95555-5555",
-        avatar_url: "https://github.com/shadcn.png"
-    }
-]
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+} from "@/components/ui/pagination"
 
 function Results() {
+    const [searchParams, setSearchParams] = useSearchParams()
+    const query = searchParams.get("q") || ""
+
+    // Parse filters directly from URL (Single Source of Truth)
+    const filters = {
+        ufs: searchParams.get("ufs") ? searchParams.get("ufs")!.split(",") : [],
+        cidades: searchParams.get("cidades") ? searchParams.get("cidades")!.split(",") : []
+    }
+
+    // Update URL when filters change
+    const handleFilterChange = useCallback((newFilters: { ufs: string[]; cidades: string[] }) => {
+        setCurrentPage(1)
+
+        setSearchParams(prev => {
+            const newParams = new URLSearchParams(prev)
+
+            if (newFilters.ufs && newFilters.ufs.length > 0) {
+                newParams.set("ufs", newFilters.ufs.join(","))
+            } else {
+                newParams.delete("ufs")
+            }
+
+            if (newFilters.cidades && newFilters.cidades.length > 0) {
+                newParams.set("cidades", newFilters.cidades.join(","))
+            } else {
+                newParams.delete("cidades")
+            }
+
+            return newParams
+        })
+    }, [setSearchParams])
+
+    const { engenheiros, loading } = useEngenheiros(query, filters)
+
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 6
+
+    // Calculate pagination logic
+    const totalPages = Math.ceil(engenheiros.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const currentEngineers = engenheiros.slice(startIndex, endIndex)
+
+    // Scroll to top when page changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, [currentPage])
+
     return (
         <div className="min-h-screen bg-background relative transition-colors duration-500">
-            {/* Reusing background for consistency but maybe tone it down? */}
+            {/* ... background ... */}
             <div className="fixed inset-0 z-0 opacity-50 pointer-events-none">
                 <SearchBackground />
             </div>
@@ -64,61 +77,113 @@ function Results() {
                 <Header />
 
                 <main className="flex-1 container mx-auto px-4 py-8">
-                    {/* Top Bar */}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight">Resultados da busca</h1>
-                            <p className="text-muted-foreground">Encontramos <span className="font-semibold text-primary">{MOCK_ENGINEERS.length}</span> engenheiros disponíveis</p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm font-medium hover:bg-accent transition-colors">
-                                <SlidersHorizontal className="h-4 w-4" />
-                                Filtros
-                            </button>
-                            <button className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm font-medium hover:bg-accent transition-colors">
-                                Relevância
-                                <ChevronDown className="h-4 w-4" />
-                            </button>
-                        </div>
+                    {/* Top Bar / Back Button */}
+                    <div className="mb-8">
+                        <Return />
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                        {/* Sidebar (Desktop) */}
-                        <aside className="hidden lg:block space-y-8">
-                            {/* Filter Groups */}
-                            <div className="space-y-4">
-                                <h3 className="font-semibold text-foreground">Especialidade</h3>
-                                <div className="space-y-2">
-                                    {["Civil", "Elétrica", "Mecânica", "Software", "Segurança"].map(label => (
-                                        <label key={label} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer">
-                                            <input type="checkbox" className="rounded border-muted text-primary focus:ring-primary/20" />
-                                            {label}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="space-y-4">
-                                <h3 className="font-semibold text-foreground">Disponibilidade</h3>
-                                <div className="space-y-2">
-                                    {["Imediata", "Esta semana", "Próximo mês"].map(label => (
-                                        <label key={label} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer">
-                                            <input type="checkbox" className="rounded border-muted text-primary focus:ring-primary/20" />
-                                            {label}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
+                    <div className="flex flex-col md:flex-row gap-8 items-start">
+                        {/* Sidebar Filter */}
+                        <aside className="w-full md:w-auto shrink-0 sticky top-24">
+                            <SidebarFilter
+                                onFilterChange={handleFilterChange}
+                                filters={filters}
+                            />
                         </aside>
 
-                        {/* Results Grid */}
-                        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {MOCK_ENGINEERS.map(eng => (
-                                <EngineerCard key={eng.id} engineer={eng} />
-                            ))}
+                        <div className="flex-1 w-full space-y-6">
+                            <div className="flex flex-col justify-between items-start gap-4">
+                                <div>
+                                    <h1 className="text-3xl font-bold tracking-tight">Resultados para "{query}"</h1>
+                                    <p className="text-muted-foreground">Encontramos <span className="font-semibold text-primary">{engenheiros.length}</span> engenheiros disponíveis</p>
+                                </div>
+                            </div>
+
+                            {loading ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                                        <div key={i} className="flex flex-col gap-4 p-5 rounded-2xl border border-border/50 bg-card/50">
+                                            <div className="flex gap-4">
+                                                <Skeleton className="h-16 w-16 rounded-xl" />
+                                                <div className="flex-1 space-y-2">
+                                                    <Skeleton className="h-6 w-3/4" />
+                                                    <Skeleton className="h-4 w-1/2" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2 mt-2">
+                                                <Skeleton className="h-4 w-full" />
+                                                <Skeleton className="h-4 w-2/3" />
+                                            </div>
+                                            <div className="mt-4 pt-4 border-t border-border/50">
+                                                <Skeleton className="h-10 w-full rounded-md" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                        {currentEngineers.length > 0 ? (
+                                            currentEngineers.map(eng => (
+                                                <EngineerCard key={eng.id || eng.crea} engineer={eng} />
+                                            ))
+                                        ) : (
+                                            <div className="col-span-full py-12 flex flex-col items-center justify-center text-center space-y-4 bg-card/30 rounded-2xl border border-dashed border-border/50">
+                                                <div className="p-4 bg-muted rounded-full">
+                                                    <div className="h-8 w-8 opacity-50 text-4xl">🔍</div>
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-semibold text-lg">Nenhum resultado encontrado</h3>
+                                                    <p className="text-muted-foreground">Tente ajustar seus filtros ou buscar por outro nome.</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Pagination Controls */}
+                                    {totalPages > 1 && (
+                                        <div className="flex justify-center mt-8">
+                                            <Pagination>
+                                                <PaginationContent>
+                                                    <PaginationItem>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                            disabled={currentPage === 1}
+                                                            className="gap-1 pl-2.5 bg-background/50 backdrop-blur-sm border-border/50"
+                                                        >
+                                                            <span>Anterior</span>
+                                                        </Button>
+                                                    </PaginationItem>
+
+                                                    <div className="text-sm text-muted-foreground mx-4 flex items-center">
+                                                        Página {currentPage} de {totalPages}
+                                                    </div>
+
+                                                    <PaginationItem>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                            disabled={currentPage === totalPages}
+                                                            className="gap-1 pr-2.5 bg-background/50 backdrop-blur-sm border-border/50"
+                                                        >
+                                                            <span>Próximo</span>
+                                                        </Button>
+                                                    </PaginationItem>
+                                                </PaginationContent>
+                                            </Pagination>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     </div>
                 </main>
+                <Footer />
             </div>
+
         </div>
     )
 }

@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Results from './pages/Results'
+import EngineerProfile from './pages/EngineerProfile'
 import { ThemeProvider } from './components/theme/theme-provider'
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/results" element={<Results />} />
+        <Route path="/engineer/:id" element={<EngineerProfile />} />
       </Routes>
     </ThemeProvider>
   )
