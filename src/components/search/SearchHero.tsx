@@ -6,7 +6,7 @@ export function SearchHero() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                 </span>
-                Mais de 5.000 engenheiros cadastrados
+                Diversos engenheiros cadastrados
             </div>
 
             <h1 className="text-4xl md:text-6xl/tight font-extrabold tracking-tight text-foreground drop-shadow-sm">
@@ -15,7 +15,7 @@ export function SearchHero() {
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                 Conectamos você aos melhores profissionais do mercado.
-                Busque por especialidade, localização ou nome.
+                Busque por especialidade, localização, nome ou CREA.
             </p>
         </div>
     )

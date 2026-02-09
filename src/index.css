@@ -69,9 +69,9 @@
 
 .dark {
   /* Escuro: Roxo quase preto e roxo profundo */
-  --background: oklch(0.20 0.03 272); /* Fundo bem mais claro */
+  --background: oklch(0.2 0.03 272); /* Fundo bem mais claro */
   --foreground: oklch(0.92 0.04 272);
-  --card: oklch(0.24 0.04 272);       /* Cards acompanhando */
+  --card: oklch(0.24 0.04 272); /* Cards acompanhando */
   --card-foreground: oklch(0.92 0.04 272);
   --popover: oklch(0.14 0.04 272);
   --popover-foreground: oklch(0.92 0.04 272);
@@ -100,5 +100,32 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar personalizado para navegadores Webkit (Chrome, Edge, Safari) */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
+  }
+
+  /* Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
 }

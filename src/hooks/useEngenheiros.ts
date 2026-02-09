@@ -41,9 +41,10 @@ export function useEngenheiros(
         }
       } else {
         // Fetch list logic
-        if (query) {
-          queryBuilder = queryBuilder.ilike("nome", `%${query}%`);
-        }
+        // Search by Name OR CREA
+        queryBuilder = queryBuilder.or(
+          `nome.ilike.%${query}%,crea.ilike.%${query}%`,
+        );
 
         // Apply Location Filters (Multi-Select OR Logic)
         const orConditions: string[] = [];
@@ -54,15 +55,7 @@ export function useEngenheiros(
             // Check if locales contains an entry with this city in its 'cidades' array
             orConditions.push(`locais_atuacao.cs.[{"cidades": ["${cidade}"]}]`);
           });
-        }
-        // Only valid if no cities selected? Or additive?
-        // User request: "filtering by state and city". Usually if I select State SP and City Santos, I want Santos.
-        // If I select State SP and RJ, I want all from SP and RJ.
-        // If I select State SP and City Rio (RJ), I want SP OR Rio.
-        // Let's combine all selected UFs and Cities into one big OR for maximum flexibility,
-        // but typically if a city is selected for a UF, we might prioritize that.
-        // For simple "OR" logic:
-        else if (filters?.ufs && filters.ufs.length > 0) {
+        } else if (filters?.ufs && filters.ufs.length > 0) {
           filters.ufs.forEach((uf) => {
             orConditions.push(`locais_atuacao.cs.[{"uf": "${uf}"}]`);
           });
