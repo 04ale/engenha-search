@@ -6,6 +6,8 @@ export interface AcervoItemProps {
   unidade: string;
   quantidade: number;
   categoria?: string;
+  codigo?: string;
+  fonte?: string;
 }
 
 export interface EngineerProps extends EngineerInput {

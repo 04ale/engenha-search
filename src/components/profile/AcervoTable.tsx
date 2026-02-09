@@ -10,11 +10,13 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown } from "lucide-react"
+import { ArrowUpDown, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import type { AcervoItemProps } from "@/types/engenheiro"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
 import { Pagination, PaginationContent, PaginationItem } from "../ui/pagination"
+import { getFilteredRowModel } from "@tanstack/react-table"
 
 export const columns: ColumnDef<AcervoItemProps>[] = [
     {
@@ -34,6 +36,16 @@ export const columns: ColumnDef<AcervoItemProps>[] = [
         cell: ({ row }) => <div className="text-left">{row.getValue("categoria") || "-"}</div>,
     },
     {
+        accessorKey: "fonte",
+        header: "Fonte",
+        cell: ({ row }) => <div className="text-left">{row.getValue("fonte") || "-"}</div>,
+    },
+    {
+        accessorKey: "codigo",
+        header: "Código",
+        cell: ({ row }) => <div className="text-left">{row.getValue("codigo") || "-"}</div>,
+    },
+    {
         accessorKey: "descricao",
         header: ({ column }) => {
             return (
@@ -49,7 +61,11 @@ export const columns: ColumnDef<AcervoItemProps>[] = [
         },
         cell: ({ row }) => <div className="font-medium text-left">{row.getValue("descricao")}</div>,
     },
-
+    {
+        accessorKey: "unidade",
+        header: () => <div className="text-center">Unidade</div>,
+        cell: ({ row }) => <div className="text-center">{row.getValue("unidade")}</div>,
+    },
     {
         accessorKey: "quantidade",
         header: ({ column }) => {
@@ -60,7 +76,7 @@ export const columns: ColumnDef<AcervoItemProps>[] = [
                         className="pr-0 hover:bg-transparent"
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                     >
-                        Qtd.
+                        Qtde
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                 </div>
@@ -72,11 +88,6 @@ export const columns: ColumnDef<AcervoItemProps>[] = [
             return <div className="text-right font-medium">{formatted}</div>
         },
     },
-    {
-        accessorKey: "unidade",
-        header: () => <div className="text-center">Unidade</div>,
-        cell: ({ row }) => <div className="text-center">{row.getValue("unidade")}</div>,
-    },
 ]
 
 interface AcervoTableProps {
@@ -85,6 +96,7 @@ interface AcervoTableProps {
 
 export function AcervoTable({ data }: AcervoTableProps) {
     const [sorting, setSorting] = React.useState<SortingState>([])
+    const [globalFilter, setGlobalFilter] = React.useState("")
     const [pagination, setPagination] = React.useState({
         pageIndex: 0,
         pageSize: 6,
@@ -97,15 +109,29 @@ export function AcervoTable({ data }: AcervoTableProps) {
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        onGlobalFilterChange: setGlobalFilter,
         onPaginationChange: setPagination,
         state: {
             sorting,
             pagination,
+            globalFilter,
         },
     })
 
     return (
         <div className="space-y-4">
+            {/* Search Input */}
+            <div className="flex items-center space-x-2">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Filtrar itens..."
+                    value={globalFilter ?? ""}
+                    onChange={(event) => setGlobalFilter(event.target.value)}
+                    className="max-w-sm h-9 bg-card/60 backdrop-blur-sm border-border/50"
+                />
+            </div>
+
             <div className="rounded-2xl border border-border/50 overflow-hidden bg-card/40 backdrop-blur-sm">
                 <Table>
                     <TableHeader className="bg-muted/30">
